@@ -37,20 +37,32 @@ const FileUpload = (props) => {
         setUploadFiles(acceptedFiles)
     }, [])
 
-    const { getRootProps, getInputProps } = useDropzone({ onDrop })
+    const { getRootProps, getInputProps, acceptedFiles,
+        fileRejections, } = useDropzone({ onDrop, accept: '.mp3, .wav' })
 
 
-    const files = uploadFiles.map(file => (
+    // const files = uploadFiles.map(file => (
+    //     <li key={file.path}>
+    //         {file.path} - {file.size} bytes
+    //     </li>
+    // ));
+
+    const acceptedFileItems = acceptedFiles.map(file => (
         <li key={file.path}>
             {file.path} - {file.size} bytes
         </li>
     ));
 
-
-    // const onChange = e => {
-    //     setUploadFiles(e.target.uploadFiles);
-    //     // setFilename(e.target.files[0].name);
-    // }
+    const fileRejectionItems = fileRejections.map(({ file, errors }) => (
+        <li key={file.path}>
+            {file.path} - {file.size} bytes
+            <ul>
+                {errors.map(e => (
+                    <li key={e.code}>{e.message}</li>
+                ))}
+            </ul>
+        </li>
+    ));
 
     const onSubmit = async e => {
         e.preventDefault();
@@ -91,8 +103,10 @@ const FileUpload = (props) => {
                     <p>(only accepts .mp3 or .mov)</p>
                 </div>
                 <aside>
-                    <h4>Files</h4>
-                    <ul>{files}</ul>
+                    <h4>Accepted files</h4>
+                    <ul>{acceptedFileItems}</ul>
+                    <h4>Rejected files</h4>
+                    <ul>{fileRejectionItems}</ul>
                 </aside>
             </section>
 
