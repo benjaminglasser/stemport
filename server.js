@@ -1,18 +1,31 @@
 const express = require('express');
-const fileUpload = require('express-fileupload');
-
+// const fileUpload = require('express-fileupload');
 const app = express();
+const multer = require('multer');
 
-app.use(fileUpload());
+
+const fileStorageEngine = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, `${__dirname}/client/public/uploads`)
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + '---' + file.originalname)
+    }
+});
+
+const upload = multer({ storage: fileStorageEngine });
+
+// app.use(fileUpload());
 
 // Upload Endpoint
-app.post('/upload', (req, res) => {
-    if (req.files == null) {
-        return res.status(400).json({ msg: "No file uploaded" });
-    }
-
-
+app.post('/upload', upload.array("files"), (req, res) => {
+    // if (req.files == null) {
+    //     return res.status(400).json({ msg: "No file uploaded" });
+    // }
     console.log(req.files);
+    res.send("single file upload")
+
+    // console.log(req.files);
 
 
     // const file = req.files.file;

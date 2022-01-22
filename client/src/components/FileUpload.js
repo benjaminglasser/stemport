@@ -58,7 +58,7 @@ const FileUpload = (props) => {
         const formData = new FormData();
 
         for (let i = 0; i < uploadFiles.length; i++) {
-            formData.append(`files[${i}]`, uploadFiles[i]);
+            formData.append(`files`, uploadFiles[i]);
         }
 
         try {
