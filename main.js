@@ -1,15 +1,29 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, Menu } = require('electron')
 const path = require('path')
+
+const installExtensions = async () => {
+    const installer = require('electron-devtools-installer')
+    const forceDownload = !!process.env.UPGRADE_EXTENSIONS
+    const extensions = [
+        'REACT_DEVELOPER_TOOLS',
+        'REDUX_DEVTOOLS',
+        'DEVTRON'
+    ]
+
+    return Promise
+        .all(extensions.map(name => installer.default(installer[name], forceDownload)))
+        .catch(console.log)
+}
 
 function createWindow() {
     // Create the browser window.
     const mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
-        webPreferences: {
-            preload: path.join(__dirname, 'preload.js')
-        }
+        // webPreferences: {
+        //     preload: path.join(__dirname, 'preload.js')
+        // }
     })
 
     // and load the index.html of the app.
@@ -18,6 +32,10 @@ function createWindow() {
     // Open the DevTools.
     // mainWindow.webContents.openDevTools()
 }
+
+
+// Create menu template
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -29,6 +47,13 @@ app.whenReady().then(() => {
         // On macOS it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
         if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    })
+
+    const { default: installExtension, REACT_DEVELOPER_TOOLS } = require("electron-devtools-installer");
+    installExtension(REACT_DEVELOPER_TOOLS).then((name) => {
+        console.log(`Added extension: ${name}`)
+    }).catch((err) => {
+        console.log(err)
     })
 })
 

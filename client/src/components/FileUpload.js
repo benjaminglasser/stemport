@@ -1,64 +1,86 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import axios from 'axios'
 import { useDropzone } from 'react-dropzone'
 
 const FileUpload = (props) => {
 
     const [uploadFiles, setUploadFiles] = useState([]);
-    // const [filename, setFilename] = useState('')
-    // const [uploadedFile, setUploadedFile] = useState({});
 
-    // const [progress, setProgress] = useState(0);
-    // const [isUploading, setUploading] = useState(false);
-
-    // const { fileRejections,
-    //     isDragActive,
-    //     acceptedFiles,
-    //     isDragAccept,
-    //     isDragReject,
-    //     getRootProps,
-    //     getInputProps } = useDropzone({
-    //         onDrop: (acceptedFiles) => {
-    //             setUploadFiles((...prevFiles) =>
-    //                 acceptedFiles.reduce(
-    //                     (acc, file) => ({
-    //                         ...acc,
-    //                         [file.name]: {
-    //                             file
-    //                         }
-    //                     }),
-    //                     ...prevFiles
-    //                 )
-    //             );
-    //         },
-    //         accept: ".jpg,.jpeg,.mp3,.wav"
-    //     });
     const onDrop = useCallback(acceptedFiles => {
+        // setUploadFiles((curr) =>
+        //     [...curr, acceptedFiles]
+        // )
         setUploadFiles(acceptedFiles)
     }, [])
 
-    const { getRootProps, getInputProps, acceptedFiles,
-        fileRejections, } = useDropzone({ onDrop, accept: '.mp3, .wav' })
+    const {
+        getRootProps,
+        getInputProps,
+        acceptedFiles,
+        fileRejections,
+        isDragActive,
+        isDragAccept,
+        isDragReject,
+    } = useDropzone({ onDrop, accept: '.mp3, .wav' })
+
+    const baseStyle = {
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "20px",
+        borderWidth: 2,
+        borderRadius: 20,
+        borderColor: "#26C2E7",
+        borderStyle: "dashed",
+        backgroundColor: "#fafafa",
+        color: "#c4c4c4",
+        outline: "none",
+        transition: "border .24s ease-in-out",
+        "&:hover": {
+            background: "#26C2E7",
+            cursor: "pointer"
+        }
+    };
 
 
-    // const files = uploadFiles.map(file => (
-    //     <li key={file.path}>
-    //         {file.path} - {file.size} bytes
-    //     </li>
-    // ));
+
+    const activeStyle = {
+        borderColor: "#f2f"
+    };
+
+    const acceptStyle = {
+        borderColor: "#f8f"
+    };
+
+    const rejectStyle = {
+        borderColor: "#f2f"
+    };
+
+    const style = useMemo(
+        () => ({
+            ...baseStyle,
+            ...(isDragActive ? activeStyle : {}),
+            ...(isDragAccept ? acceptStyle : {}),
+            ...(isDragReject ? rejectStyle : {})
+
+        }),
+        [isDragActive, isDragReject, isDragAccept, acceptStyle, activeStyle]
+    );
+
 
     const acceptedFileItems = acceptedFiles.map(file => (
-        <li key={file.path}>
+        <li className="list-group-item" key={file.path}>
             {file.path} - {file.size} bytes
         </li>
     ));
 
     const fileRejectionItems = fileRejections.map(({ file, errors }) => (
-        <li key={file.path}>
+        <li className="list-group-item" key={file.path}>
             {file.path} - {file.size} bytes
-            <ul>
+            <ul className="list-group list-group-flush">
                 {errors.map(e => (
-                    <li key={e.code}>{e.message}</li>
+                    <li className="list-group-item" key={e.code}>({e.message})</li>
                 ))}
             </ul>
         </li>
@@ -74,7 +96,8 @@ const FileUpload = (props) => {
         }
 
         try {
-            const res = await axios.post('/upload', formData, {
+            // const res = 
+            await axios.post('/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -97,20 +120,33 @@ const FileUpload = (props) => {
         <form onSubmit={onSubmit}>
 
             <section className="container">
-                <div {...getRootProps({ className: 'dropzone' })}>
-                    <input {...getInputProps()} />
-                    <p>Drag 'n' drop some files here, or click to select files</p>
-                    <p>(only accepts .mp3 or .mov)</p>
+                <div>
+                    <div {...getRootProps({ className: 'dropzone', style })}>
+                        <input {...getInputProps()} />
+                        <p>Drag and drop your stems, or click to select files</p>
+                        <p>(only accepts .mp3 or .mov)</p>
+                    </div>
+                    <div className="d-flex mw-100 justify-content-center">
+                        <input type="submit" value="Upload" className="btn btn-primary btn-lg mt-4" />
+                    </div>
                 </div>
-                <aside>
-                    <h4>Accepted files</h4>
-                    <ul>{acceptedFileItems}</ul>
-                    <h4>Rejected files</h4>
-                    <ul>{fileRejectionItems}</ul>
+                <aside className="card text-center m-4">
+                    {
+                        acceptedFileItems.length > 0 ? (
+                            <div>
+                                <h4 className="text-success mt-4">Accepted files</h4>
+                                <ul className="list-group list-group-flush">{acceptedFileItems}</ul>
+                            </div>) : null
+                    }
+                    {
+                        fileRejectionItems.length > 0 ? (
+                            <div>
+                                <h4 className="text-danger mt-4">Rejected files</h4>
+                                <ul className="list-group list-group-flush">{fileRejectionItems}</ul>
+                            </div>) : null
+                    }
                 </aside>
             </section>
-
-            <input type="submit" value="Upload" className="btn btn-primary btn-block mt-4" />
         </form>
 
     </div>;
